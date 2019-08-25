@@ -17,10 +17,10 @@ void setup(){
 
   #if s_BH1750FVI
     LightSensor.begin();
-    Data["BH1750FVI"]["units"]["light"] = "lumen";
+    Data["BH1750FVI"]["light"]["units"] = "lumen";
   #endif
   #if s_MQ135
-    Data["MQ135"]["units"]["air_ppm"] = "ppm";
+    Data["MQ135"]["air_ppm"]["units"] = "ppm";
   #endif
 }
 
@@ -38,10 +38,10 @@ void loop(){
     last_now = now;
 
     #if s_BH1750FVI
-      Data["BH1750FVI"]["light"] = (long unsigned int)lux;
+      Data["BH1750FVI"]["light"]["value"] = (long unsigned int)lux;
     #endif
     #if s_MQ135
-      Data["MQ135"]["air_ppm"] = air_ppm;
+      Data["MQ135"]["air_ppm"]["value"] = air_ppm;
     #endif
 
     Serial.println(JSON.stringify(Data));
