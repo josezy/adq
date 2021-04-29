@@ -45,7 +45,7 @@ void loop(){
   #endif
 
   #if s_MQ135
-    int air_ppm = analogRead(A0);
+    int air_ppm = map(analogRead(A0), 0, 1023, 0, 100);
   #endif
 
   #if s_KS0196
