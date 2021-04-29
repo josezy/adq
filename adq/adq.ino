@@ -1,8 +1,9 @@
 #include <Arduino_JSON.h>
 
-#define s_BH1750FVI false    // used pines: A4, A5
-#define s_MQ135     true     // used pines: A0
-#define s_KS0196    false    // used pines: A1, D0
+#define s_BH1750FVI false    //
+#define s_MQ135     true     // A0
+#define s_KS0196    false    //
+#define s_AM2302    true     // DD2
 
 #if s_BH1750FVI
   #include <BH1750FVI.h>
@@ -18,6 +19,12 @@
   float mean = 0; 
 #endif
 
+#if s_AM2302
+  #include <DHT.h>
+  #define DHTPIN DD2
+  DHT dht(DHTPIN, DHT22);
+#endif
+
 long dt = 1000; // milliseconds
 long last_now = millis();
 JSONVar data;
@@ -31,6 +38,11 @@ void setup(){
   #endif
   #if s_MQ135
     data["MQ135"]["air_ppm"]["units"] = "ppm";
+  #endif
+  #if s_AM2302
+    dht.begin();
+    data["AM2302"]["humidity"]["units"] = "%";
+    data["AM2302"]["temperature"]["units"] = "ºC";
   #endif
   #if s_KS0196
     pinMode(ks0196_analog_pin, INPUT);
@@ -58,6 +70,13 @@ void loop(){
     }
   #endif
 
+  #if s_AM2302
+    // Readings take about 250 milliseconds
+    // and may be up to 2 seconds 'old' (slow sensor)
+    float am2302_humidity = dht.readHumidity();
+    float am2302_temperature = dht.readTemperature(); // celsius
+  #endif
+
   long now = millis();
   if(now - last_now > dt){
     last_now = now;
@@ -70,6 +89,12 @@ void loop(){
     #endif
     #if s_KS0196
       data["KS0196"]["air_ppm"]["value"] = mean / N;
+    #endif
+    #if s_AM2302
+      float h = isnan(am2302_humidity) ? -1 : am2302_humidity;
+      float t = isnan(am2302_temperature) ? -1 : am2302_temperature;
+      data["AM2302"]["humidity"]["value"] = (int)h;
+      data["AM2302"]["temperature"]["value"] = (int)t;
     #endif
 
     Serial.println(JSON.stringify(data));
